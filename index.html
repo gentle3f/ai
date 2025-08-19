@@ -94,8 +94,24 @@
 </div>
 
 <script>
-const EXEC_URL = "https://script.google.com/macros/s/AKfycbz6wWyIrEA2CW9xJEAIy3hvE-aQiN0yWvGCoPhOVxHwjRvk6xerwcEe9Q-Hh5wa2YY/exec";
+// 讀取 ?api= 參數；若無就用上次記錄；再無先用預設（你可以保留一條備用）
+function pickApiUrl() {
+  const qs = new URLSearchParams(location.search);
+  const fromQuery = qs.get("api");
+  if (fromQuery) {
+    try { localStorage.setItem("api_url", fromQuery); } catch(e){}
+    return fromQuery;
+  }
+  try {
+    const saved = localStorage.getItem("api_url");
+    if (saved) return saved;
+  } catch(e){}
+  // ＜— 這條當後備（可留空字串都得）
+  return "https://script.google.com/macros/s/AKfycbzOKVyOurzY2sPadLE_OxwKZVbyKPNbbo7gfygWzLVy7O-KyCiff34yRsBXIlD4ZV4/exec";
+}
 
+// 全域 EXEC_URL：之後所有 fetch 都用呢個
+const EXEC_URL = pickApiUrl();
 const chat = document.getElementById('chat');
 const input = document.getElementById('input');
 const fileInput = document.getElementById('file');
@@ -300,6 +316,7 @@ function lock(on){
 </script>
 </body>
 </html>
+
 
 
 
