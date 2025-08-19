@@ -209,7 +209,7 @@ sendBtn.onclick = async ()=>{
   try{
     const r = await fetch(EXEC_URL, {
       method: "POST",
-      headers: { "Content-Type":"application/json; charset=utf-8" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
     const json = await r.json();
@@ -301,4 +301,5 @@ function lock(on){
 </script>
 </body>
 </html>
+
 
