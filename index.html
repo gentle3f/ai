@@ -155,13 +155,26 @@ function getEmailRequired(){
 function setSendEnabled(on){ btnSend.disabled=!on; }
 
 async function verifyEmailServer(email){
-  const api=localStorage.getItem('api'); if(!api) return false;
-  try{
-    const r=await fetch(api+'?verify='+encodeURIComponent(email));
-    const ct=r.headers.get('content-type')||'';
-    const j=ct.includes('application/json')? await r.json(): {ok:false};
-    return !!j.ok;
-  }catch(e){ return false; }
+  const api = localStorage.getItem('api');
+  if (!api) return false;
+  try {
+    const r = await fetch(api + '?verify=' + encodeURIComponent(email), { cache: 'no-store' });
+    const ct = (r.headers.get('content-type') || '').toLowerCase();
+    if (ct.includes('application/json')) {
+      const j = await r.json();
+      return !!j.ok;
+    } else {
+      // 後備：試下 parse 文字（避免 "Unexpected token <"）
+      const txt = (await r.text()).trim();
+      // 盡量容錯：{"ok":true} / true / ok:true / 其他
+      if (/\"ok\"\s*:\s*true/.test(txt)) return true;
+      if (/^\s*\{\s*ok\s*:\s*true\s*\}\s*$/i.test(txt)) return true;
+      if (/^true$/i.test(txt)) return true;
+      return false;
+    }
+  } catch(e){
+    return false;
+  }
 }
 
 async function ensureEmailVerified(){
@@ -233,3 +246,4 @@ function guessMime(name=''){
 </script>
 </body>
 </html>
+
