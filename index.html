@@ -2,359 +2,340 @@
 <html lang="zh-HK">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gentle · Pay-per-Ask</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>貼地 AI – Pay-per-Ask</title>
 <style>
   :root{
-    --bg:#f4f7fb; --panel:#ffffff; --bubble:#f2f6ff; --me:#e9fff3;
-    --text:#102233; --muted:#5e738a; --border:#d6e0ea;
-    --accent:#3ac18e; --accent2:#4aa3ff;
+    --bg:#f6f7fb;
+    --card:#ffffff;
+    --text:#1f2a37;
+    --sub:#6b7280;
+    --primary:#2563eb;
+    --primary-weak:#e5edff;
+    --danger:#ef4444;
+    --ring: rgba(37,99,235,.35);
+    --shadow: 0 6px 24px rgba(0,0,0,.07);
+    --radius:16px;
+    --footer-h: clamp(72px, 18vh, 160px);
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);
-    font:16px/1.5 system-ui,-apple-system,"PingFang HK","Noto Sans TC","Microsoft JhengHei",sans-serif;}
-  .wrap{max-width:980px;margin:auto;padding:14px}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px}
-  .topbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between;margin-bottom:10px}
-  .chips{display:flex;gap:8px;flex-wrap:wrap}
-  .chip{border:1px solid var(--border);background:#fff;color:var(--text);
-    border-radius:999px;padding:8px 12px;cursor:pointer;white-space:nowrap}
-  .chip.active{background:linear-gradient(90deg,#49e0a6,#8ad1ff);color:#08323a;border-color:transparent}
-  .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .pill{border:1px solid var(--border);border-radius:999px;background:#fff;padding:7px 10px}
-  .btn{cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text);border-radius:12px;padding:9px 12px}
-  .btn.primary{background:linear-gradient(90deg,#49e0a6,#8ad1ff);border:0;color:#093039;font-weight:600}
-  .btn.warn{background:#ffedee;border:1px solid #ffd6da;color:#a12233}
-  input[type="email"], select{border:1px solid var(--border);background:#fff;color:var(--text);
-    border-radius:12px;padding:8px 10px}
-  .hint{font-size:12px;color:var(--muted)}
-  .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px}
-  .chat-wrap{display:flex;flex-direction:column}
-  .chat{display:flex;flex-direction:column;gap:10px;height:min(62vh,680px);
-    min-height:360px;max-height:70vh;overflow:auto;padding:14px}
-  .bubble{max-width:84%;padding:12px 14px;border-radius:14px;border:1px solid var(--border);white-space:pre-wrap}
-  .bot{align-self:flex-start}.bot .bubble{background:var(--bubble)}
-  .me{align-self:flex-end}.me .bubble{background:var(--me)}
-  .meta{font-size:12px;color:var(--muted);margin-top:4px}
-  .composer{position:sticky;bottom:0;z-index:2;border-top:1px solid var(--border);padding:10px;background:#fafcff;border-bottom-left-radius:16px;border-bottom-right-radius:16px}
-  .filebox{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
-  .filechip{border:1px dashed var(--border);background:#fff;color:var(--text);
-    border-radius:10px;padding:6px 8px;font-size:12px}
-  .inputs{display:flex;gap:8px;align-items:flex-end}
-  textarea{flex:1;border:1px solid var(--border);background:#fff;color:var(--text);
-    border-radius:12px;padding:10px 12px;min-height:64px;resize:vertical}
-  #pro{display:none;border-top:1px dashed var(--border);padding:10px;background:#fafcff}
-  @media (max-width:740px){ .chat{height:56vh} }
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "PingFang HK", "PingFang TC", "Noto Sans TC", "Heiti TC", Arial, sans-serif;
+  }
+  .wrap{min-height:100%; padding-bottom: calc(var(--footer-h) + env(safe-area-inset-bottom));}
+  header{
+    position:sticky; top:0; z-index:10; background:linear-gradient(#ffffff, #ffffffcc);
+    backdrop-filter:saturate(1.2) blur(6px);
+    border-bottom:1px solid #eef2f7;
+  }
+  .bar{max-width:1100px;margin:auto;padding:16px 16px 10px}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .chip{
+    padding:10px 14px;border-radius:999px;background:#fff;border:1px solid #e5e7eb;cursor:pointer;user-select:none;
+  }
+  .chip:hover{border-color:#d1d5db}
+  .chip.primary{background:var(--primary-weak);border-color:#caddff;color:#143a9c}
+  .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .muted{color:var(--sub)}
+  .field{display:flex;gap:10px;align-items:center;margin-top:10px}
+  .field input{
+    flex:1;min-width:220px;padding:12px 14px;border-radius:12px;border:1px solid #dce3ef;background:#fff;
+  }
+  .btn{
+    padding:10px 14px;border-radius:12px;border:1px solid #dce3ef;background:#fff;cursor:pointer;
+  }
+  .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .btn.danger{background:#fff;color:var(--danger);border-color:#ffd9da}
+  main{max-width:1100px;margin:10px auto 0;padding:0 16px}
+  .chat{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:16px;min-height:48vh;
+  }
+  .bubble{
+    max-width:92%;padding:12px 14px;border-radius:14px;margin:8px 0;line-height:1.55;
+    word-wrap:break-word;white-space:pre-wrap;
+  }
+  .me{background:#e8f0ff;border:1px solid #cfe0ff;margin-left:auto}
+  .ai{background:#f5f7fb;border:1px solid #e6eaf2}
+  .meta{font-size:12px;color:var(--sub);margin:4px 2px 0}
+  /* sticky composer */
+  .composer{
+    position:fixed;left:0;right:0;bottom:0;z-index:15;background:#fff;border-top:1px solid #e8edf4;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  }
+  .composer-inner{max-width:1100px;margin:auto;display:grid;grid-template-columns: auto 1fr auto;gap:10px;align-items:end}
+  .upload-label{
+    display:inline-flex;gap:8px;align-items:center;padding:10px 12px;border:1px dashed #cfd7e6;border-radius:12px;background:#fafbff;cursor:pointer;
+  }
+  .upload-label input{display:none}
+  textarea{
+    width:100%;resize:none;max-height:10lh;min-height:3lh;padding:12px 14px;border-radius:12px;border:1px solid #dce3ef;background:#fff;
+    outline:none;
+  }
+  textarea:focus{border-color:var(--primary); box-shadow:0 0 0 3px var(--ring)}
+  .send{
+    min-width:84px;padding:12px 14px;border-radius:12px;background:var(--primary);color:#fff;border:none;cursor:pointer;
+  }
+  .hint{max-width:1100px;margin:6px auto 10px;padding:0 16px;color:var(--sub);font-size:12px}
+  /* space at bottom so chat不被composer遮住 */
+  .spacer{height:calc(var(--footer-h) + env(safe-area-inset-bottom))}
+  @media (max-width:720px){
+    .bubble{max-width:100%}
+    .composer-inner{grid-template-columns:auto 1fr auto}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <!-- Top bar：任務 + Email + 控制 -->
-  <div class="card toolbar topbar">
-    <div class="chips" id="taskbar">
-      <button class="chip active" data-task="ask">發問</button>
-      <button class="chip" data-task="letter">寫信</button>
-      <button class="chip" data-task="vision">分析圖片</button>
-      <button class="chip" data-task="translate">翻譯</button>
-      <button class="chip" data-task="imggen">生成圖片提示詞</button>
-    </div>
-    <div class="right">
-      <label class="pill">
-        <span id="lblEmail">電郵（必填）：</span>
-        <input id="email" type="email" placeholder="you@example.com" style="width:220px">
-      </label>
-      <button id="lang" class="btn pill">粵語</button>
-      <button id="newchat" class="btn warn">清除對話</button>
-      <button id="togglePro" class="btn pill">專業模式：關</button>
-    </div>
-  </div>
 
-  <!-- Chat + Pro 面板 + 下方輸入列 -->
-  <div class="card chat-wrap">
-    <div id="chat" class="chat"></div>
+  <!-- 頂部：任務 chip + 控件 -->
+  <header>
+    <div class="bar">
+      <div class="row">
+        <div class="chip primary" data-task="ask">發問</div>
+        <div class="chip" data-task="letter">寫信</div>
+        <div class="chip" data-task="vision">分析圖片</div>
+        <div class="chip" data-task="translate">翻譯</div>
+        <div class="chip" data-task="imgprompt">生成圖片提示詞</div>
 
-    <!-- 專業模式：模型選擇 -->
-    <div id="pro">
-      <div class="hint" style="margin-bottom:6px">專業模式會記錄用量方便結算；亦可以自選模型。</div>
-      <label class="pill">
-        <span id="lblModel">模型：</span>
-        <select id="model">
-          <option value="openai/gpt-5-chat">openai/gpt-5-chat</option>
-          <option value="anthropic/claude-3.7-sonnet">anthropic/claude-3.7-sonnet</option>
-          <option value="google/gemini-2.5-flash">google/gemini-2.5-flash</option>
-          <option value="deepseek/deepseek-r1-0528-qwen3-8b:free">deepseek/deepseek-r1-0528-qwen3-8b:free</option>
-          <option value="deepseek/deepseek-r1">deepseek/deepseek-r1</option>
-        </select>
-      </label>
-    </div>
-
-    <!-- 下方輸入列 -->
-    <div class="composer">
-      <div class="filebox" id="filebox"></div>
-      <div class="inputs">
-        <input id="file" type="file" multiple>
-        <textarea id="input" placeholder="輸入訊息…（支援貼圖/上載檔案）"></textarea>
-        <button id="send" class="btn primary">送出</button>
+        <div class="right">
+          <button class="btn" id="btnLang">粵語</button>
+          <button class="btn danger" id="btnClear">清除對話</button>
+          <span class="muted">專業模式：</span>
+          <button class="btn" id="btnPro">關</button>
+        </div>
       </div>
-      <div class="hint" id="footHint">提示：Enter 送出；Shift+Enter 換行</div>
+
+      <div class="field">
+        <label class="muted">電郵（必填）：</label>
+        <input id="email" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email">
+      </div>
+    </div>
+  </header>
+
+  <!-- 對話區 -->
+  <main>
+    <div id="chat" class="chat">
+      <div class="bubble ai">👋 歡迎！上面揀任務，下面輸入或上載檔案，我會一步步引導你。</div>
+      <div class="meta">AI</div>
+    </div>
+    <div class="spacer" aria-hidden="true"></div>
+  </main>
+
+  <!-- 置底輸入區（composer） -->
+  <div class="composer" role="region" aria-label="輸入區">
+    <div class="composer-inner">
+      <label class="upload-label">
+        📎 上載
+        <input id="file" type="file" multiple accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt">
+      </label>
+      <textarea id="input"
+        placeholder="輸入訊息…（支援貼圖／上載檔案）"
+        rows="3"
+        enterkeyhint="done"  <!-- 手機鍵盤顯示「完成」，避免誤導為送出 -->
+      ></textarea>
+      <button class="send" id="btnSend">送出</button>
     </div>
   </div>
+  <div class="hint">提示：電腦 Enter 送出、Shift+Enter 換行；手機 Enter 會換行，請按「送出」。</div>
 </div>
 
 <script>
-/* ====== API URL：?api= 設定並記住 ====== */
-const DEFAULT_API = "https://script.google.com/macros/s/AKfycbzOKVyOurzY2sPadLE_OxwKZVbyKPNbbo7gfygWzLVy7O-KyCiff34yRsBXIlD4ZV4/exec";
-function pickApiUrl(){
-  try{
-    const qs = new URLSearchParams(location.search);
-    const q = qs.get('api');
-    if (q){ localStorage.setItem('api_url', q); return q; }
-    const s = localStorage.getItem('api_url'); return s || DEFAULT_API;
-  }catch(_){ return DEFAULT_API; }
-}
-const EXEC_URL = pickApiUrl();
+/* ====== 全域狀態 ====== */
+const $ = s => document.querySelector(s);
+const chat = $('#chat');
+const input = $('#input');
+const emailEl = $('#email');
+const fileEl = $('#file');
+const btnSend = $('#btnSend');
+const btnClear = $('#btnClear');
+const btnPro = $('#btnPro');
+const btnLang = $('#btnLang');
+const IS_MOBILE = matchMedia("(pointer:coarse)").matches || /Android|iPhone|iPad/i.test(navigator.userAgent);
 
-/* ====== 文案 & 任務 preset ====== */
-const TXT = {
-  'zh-HK':{
-    tasks:{ ask:'發問', letter:'寫信', vision:'分析圖片', translate:'翻譯', imggen:'生成圖片提示詞' },
-    proOff:'專業模式：關', proOn:'專業模式：開',
-    email:'電郵（必填）', model:'模型',
-    welcome:'👋 歡迎！上面揀任務，下面輸入或上載檔案，我會一步步引導你。',
-    hint:'提示：Enter 送出；Shift+Enter 換行',
-    send:'送出', newchat:'清除對話', inputPH:'輸入訊息…（支援貼圖/上載檔案）',
-    guide:{
-      ask:'✅ 小貼士：講清楚情境、限制、已知資料或你想達到嘅效果。',
-      letter:'✍️ 寫信引導：收件人、主題、目的、語氣（禮貌/貼地/正式）、大概字數。',
-      vision:'🖼️ 圖片引導：可上載多張；如要 OCR 請講明；亦可要求「幫我歸納重點」。',
-      translate:'🌏 翻譯引導：來源→目標語言；專有名詞是否保留原文；口語/書面？',
-      imggen:'🎨 提示詞引導：主題+風格（寫實/卡通）+鏡頭（廣角/微距）+光線（黃昏/柔光）。'
-    },
-    langBtn:'粵語'
-  },
-  'en':{
-    tasks:{ ask:'Ask', letter:'Write Letter', vision:'Image Analysis', translate:'Translate', imggen:'Image Prompt' },
-    proOff:'Pro: Off', proOn:'Pro: On',
-    email:'Email (required)', model:'Model',
-    welcome:'👋 Welcome! Pick a task above, then type or upload files below. I’ll guide you.',
-    hint:'Tip: Enter to send; Shift+Enter for newline',
-    send:'Send', newchat:'New Chat', inputPH:'Type your message… (paste/upload supported)',
-    guide:{
-      ask:'✅ Tip: provide context, constraints, and your goal.',
-      letter:'✍️ Letter: recipient, subject, purpose, tone (polite/friendly/formal), target length.',
-      vision:'🖼️ For images: upload multiple; say if you want OCR; ask for key takeaways.',
-      translate:'🌏 Translation: source→target; preserve terms? formal or casual?',
-      imggen:'🎨 Prompt: subject + style (realistic/cartoon) + lens + lighting.'
-    },
-    langBtn:'English'
-  }
-};
+let LANG = (localStorage.getItem('lang') || 'zh');
+let PRO = JSON.parse(localStorage.getItem('pro') || 'false');
+let API = new URLSearchParams(location.search).get('api') || localStorage.getItem('api') || '';
+if (API) localStorage.setItem('api', API);
+
+emailEl.value = localStorage.getItem('email') || '';
+
+/* ====== 任務預設 ====== */
 const PRESETS = {
-  'zh-HK':{
-    ask:"請用粵語回答以下問題，先講重點，再以簡單要點解釋：",
-    letter:"幫我用香港書面語代寫一封電郵：包含主旨、禮貌開場、主體分段、清晰結尾。",
-    vision:"分析我上載的圖片：1) 描述重點 2) 如有文字請 OCR 3) 提出建議或風險。",
-    translate:"把以下內容譯成粵語（香港用字）；如附圖請先 OCR 再翻譯。",
-    imggen:"幫我寫英文生成圖片的 prompt：一句主提示＋4–6 個修飾參數＋一條負面提示。"
-  },
-  'en':{
-    ask:"Answer the following. Start with the key point, then bullet explanations:",
-    letter:"Draft a polite email: subject, greeting, clear paragraphs, concise closing.",
-    vision:"Analyze my uploaded image(s): 1) describe key elements 2) OCR any text 3) tips/risks.",
-    translate:"Translate to English; if images attached, OCR first then translate.",
-    imggen:"Write an English image prompt: one main line + 4–6 modifiers + one negative prompt."
+  zh:{
+    ask: "請用廣東話回答以下問題，先講重點，再以簡單要點解釋：",
+    letter: "幫我寫一封電郵：\n收件人：\n主題：\n口吻：禮貌專業\n內容要點：\n",
+    vision: "請幫我分析呢張相，列出你見到嘅重點，然後俾出建議：",
+    translate: "幫我把以下文字翻譯成粵語口語：\n",
+    imgprompt: "幫我寫一段清晰的圖片生成提示詞（stable diffusion / gpt-image / flux），主題："
   }
 };
-const TASK_MODEL = {
-  ask:"openai/gpt-5-chat",
-  letter:"openai/gpt-5-chat",
-  vision:"openai/gpt-5-chat",
-  translate:"openai/gpt-5-chat",
-  imggen:"openai/gpt-5-chat"
-};
 
-let LANG = localStorage.getItem('lang') || 'zh-HK';
-let history = [];
-let pendingFiles = [];
-
-/* ====== DOM ready ====== */
-window.addEventListener('DOMContentLoaded', () => {
-  let _id = 0; // ← 提早宣告，避免 TDZ
-  const chat = document.getElementById('chat');
-  const input = document.getElementById('input');
-  const fileInput = document.getElementById('file');
-  const fileBox = document.getElementById('filebox');
-  const sendBtn = document.getElementById('send');
-  const proBtn = document.getElementById('togglePro');
-  const proPanel = document.getElementById('pro');
-  const modelSel = document.getElementById('model');
-  const emailInput = document.getElementById('email');
-  const newBtn = document.getElementById('newchat');
-  const langBtn = document.getElementById('lang');
-  const lblEmail = document.getElementById('lblEmail');
-  const lblModel = document.getElementById('lblModel');
-
-  function t(k){ return TXT[LANG][k]; }
-  function tt(g,k){ return TXT[LANG][g][k]; }
-
-  function initUI(){
-    // 任務 chip 文案
-    document.querySelectorAll('.chip').forEach(ch=>{
-      const task = ch.dataset.task; ch.textContent = tt('tasks', task);
-    });
-    // 文案
-    document.getElementById('footHint').textContent = TXT[LANG].hint;
-    sendBtn.textContent = TXT[LANG].send;
-    newBtn.textContent = TXT[LANG].newchat;
-    langBtn.textContent = TXT[LANG].langBtn;
-    lblEmail.textContent = TXT[LANG].email + '：';
-    lblModel.textContent = TXT[LANG].model + '：';
-    input.placeholder = TXT[LANG].inputPH;
-
-    // 歡迎氣泡
-    chat.innerHTML = '';
-    pushBubble('bot', TXT[LANG].welcome);
-
-    // 還原 email
-    const savedMail = localStorage.getItem('email');
-    if (savedMail) emailInput.value = savedMail;
-  }
-  initUI();
-
-  // 語言切換
-  langBtn.addEventListener('click', ()=>{
-    LANG = (LANG==='zh-HK'?'en':'zh-HK');
-    localStorage.setItem('lang', LANG);
-    initUI();
+/* ====== UI 綁定 ====== */
+document.querySelectorAll('.chip').forEach(ch=>{
+  ch.addEventListener('click', ()=>{
+    pickTask(ch.dataset.task);
   });
+});
 
-  // 任務 chips（事件委派）
-  document.addEventListener('click', (e)=>{
-    const chip = e.target.closest('.chip'); if (!chip) return;
-    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-    chip.classList.add('active');
-    const task = chip.dataset.task;
-    modelSel.value = TASK_MODEL[task];               // 自揀模型
-    pushBubble('bot', TXT[LANG].guide[task]);        // 顯示引導
-    input.value = "";                                   // 立即清空
-    input.placeholder = PRESETS[LANG][task] || "";      // 用 preset 做 placeholder 提示
-    input.focus();
-  });
+btnClear.addEventListener('click', ()=>{
+  chat.innerHTML = '<div class="bubble ai">🧹 已開新對話。</div><div class="meta">AI</div>';
+  input.value = '';
+});
 
-  // 專業模式
-  proBtn.addEventListener('click', ()=>{
-    const on = proPanel.style.display === 'block';
-    proPanel.style.display = on ? 'none' : 'block';
-    proBtn.textContent = on ? TXT[LANG].proOff : TXT[LANG].proOn;
-  });
+btnPro.addEventListener('click', ()=>{
+  PRO = !PRO; localStorage.setItem('pro', JSON.stringify(PRO));
+  btnPro.textContent = PRO ? '開' : '關';
+  pushAI(PRO ? '🔧 專業模式已開：輸入 /model 以指定模型（如 openai/gpt-5-chat）。' :
+               '已關閉專業模式。系統會自動幫你揀模型。');
+});
 
-  // 檔案
-  fileInput.addEventListener('change', async ()=>{
-    for (const f of fileInput.files) await addFile(f);
-    fileInput.value = "";
-  });
-  window.addEventListener('paste', async e=>{
-    if (!e.clipboardData) return;
-    for (const it of e.clipboardData.items){
-      if (it.kind==='file') await addFile(it.getAsFile());
-    }
-  });
-  function guessMime(name){
-    const ext=(name.split('.').pop()||'').toLowerCase();
-    if(['jpg','jpeg'].includes(ext))return'image/jpeg';
-    if(['png'].includes(ext))return'image/png';
-    if(['gif'].includes(ext))return'image/gif';
-    if(['webp'].includes(ext))return'image/webp';
-    if(['pdf'].includes(ext))return'application/pdf';
-    if(['doc','docx'].includes(ext))return'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    return'application/octet-stream';
-  }
-  async function addFile(file){
-    if(!file)return;
-    const b64 = await fileToBase64(file);
-    const mime = file.type || guessMime(file.name);
-    pendingFiles.push({name:file.name,mime,b64});
-    const chip=document.createElement('div');chip.className='filechip';
-    chip.textContent=file.name+(mime.startsWith('image/')?' 🖼️':'');
-    fileBox.appendChild(chip);
-  }
-  function fileToBase64(file){
-    return new Promise((res,rej)=>{
-      const fr=new FileReader();
-      fr.onload=()=>res(String(fr.result).split(",")[1]);
-      fr.onerror=rej; fr.readAsDataURL(file);
-    });
-  }
+btnLang.addEventListener('click', ()=>{
+  LANG = (LANG==='zh'?'en':'zh');
+  localStorage.setItem('lang', LANG);
+  btnLang.textContent = LANG==='zh'?'粵語':'EN';
+});
 
-  // 送出（Enter / Button）
-  input.addEventListener('keydown', (e)=>{
-    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendBtn.click(); }
-  });
-  sendBtn.addEventListener('click', sendNow);
-  newBtn.addEventListener('click', ()=>{ history=[]; chat.innerHTML=''; pushBubble('bot', TXT[LANG].welcome); });
+/* 手機：focus 時確保 composer 不被鍵盤遮住 */
+input.addEventListener('focus', ()=>{
+  setTimeout(()=> input.scrollIntoView({block:'nearest'}), 180);
+});
 
-  function getEmailRequired(){
-    const mail=(emailInput.value||'').trim();
-    if(!mail){ alert(LANG==='zh-HK'?'請先輸入 Email':'Please enter your email'); emailInput.focus(); return null; }
-    try{ localStorage.setItem('email', mail); }catch(_){}
-    return mail;
-  }
+/* 送出邏輯：電腦 Enter 送出、Shift+Enter 換行；手機 Enter 只換行 */
+input.addEventListener('keydown', (e)=>{
+  if (e.key !== 'Enter') return;
+  if (IS_MOBILE) return;            // 手機一律只換行
+  if (e.shiftKey) return;           // 電腦 Shift+Enter 換行
+  e.preventDefault();
+  sendNow();
+});
 
-  async function sendNow(){
+btnSend.addEventListener('click', sendNow);
+fileEl.addEventListener('change', attachFiles);
+
+/* 自動增高 textarea（最多 6 行） */
+input.addEventListener('input', ()=>{
+  input.style.height = 'auto';
+  const lineH = parseFloat(getComputedStyle(input).lineHeight) || 20;
+  const max = lineH * 6;
+  input.style.height = Math.min(input.scrollHeight, max) + 'px';
+});
+
+/* ====== 功能 ====== */
+function pickTask(task){
+  input.value = "";                                // 清空輸入框
+  input.placeholder = PRESETS.zh[task] || "輸入訊息…";
+  pushAI('✅ 已選擇任務：' + taskName(task) + '。請按提示輸入，或上載檔案。');
+  input.focus();
+}
+
+function taskName(t){
+  return {ask:'發問', letter:'寫信', vision:'分析圖片', translate:'翻譯', imgprompt:'生成圖片提示詞'}[t] || t;
+}
+
+function getEmailRequired(){
+  const v = (emailEl.value||'').trim();
+  if (!v){ emailEl.focus(); emailEl.reportValidity?.(); return null; }
+  localStorage.setItem('email', v);
+  return v;
+}
+
+function attachFiles(){
+  // 可加 chip 顯示已選檔案；目前交由 sendNow() 讀取 fileEl.files
+}
+
+async function sendNow(){
   const email = getEmailRequired(); if (!email) return;
-  const text  = input.value.trim();
 
-  //（如無內容且冇附件，直接返回）
-  if (!text && pendingFiles.length === 0){
-    input.placeholder = TXT[LANG].inputPH;
+  // 收集文字
+  const text = (input.value || '').trim();
+  const files = [...(fileEl.files||[])];
+
+  if (!text && files.length===0){
+    input.placeholder = "請輸入文字或上載檔案…";
+    input.focus(); return;
+  }
+
+  // UI 立即清空／回饋
+  input.value = '';
+  pushMe(text || '(只有附件)');
+
+  // 準備附件（轉 base64）
+  const attachments = [];
+  for (const f of files){
+    const b64 = await fileToBase64(f);
+    attachments.push({ filename:f.name, mimeType:f.type || guessMime(f.name), dataBase64:b64 });
+  }
+  fileEl.value = ''; // reset
+
+  // 自動揀模型（簡化示例）
+  let model = 'openai/gpt-5-chat';
+  if (attachments.some(a=>a.mimeType.startsWith('image/'))) model = 'openai/gpt-5-vision-preview';
+  if (PRO && text.startsWith('/model ')) model = text.split(/\s+/)[1] || model;
+
+  const messages = [{ role:'user', content:text }];
+
+  // 呼叫後端
+  const payload = { email, model, messages, attachments };
+  const res = await fetch(localStorage.getItem('api'), {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  }).then(r=>r.json()).catch(err=>({success:false, error:String(err)}));
+
+  if (!res.success){
+    pushAI('❌ 連線失敗：' + (res.error || res.upstream_body || ''));
     return;
   }
 
-  input.value = "";   // ← 送出即刻清空
-  pushBubble('me', text || '(只有附件)');
-
-    const task = (document.querySelector('.chip.active')?.dataset.task)||'ask';
-    const messages=[...history,{role:"user",content:(PRESETS[LANG][task]||'')+"\n\n"+(text||'')}];
-    const attachments=pendingFiles.map(p=>({filename:p.name,mimeType:p.mime,dataBase64:p.b64}));
-    const payload={ email, model:(document.getElementById('model')?.value||'openai/gpt-5-chat'), messages, attachments };
-
-    lock(true); const thinkId=pushBubble('bot','…');
-    try{
-      const r = await fetch(EXEC_URL,{ method:"POST", body: JSON.stringify(payload) });
-      const json = await r.json().catch(()=>null);
-      removeBubble(thinkId);
-
-      if(!json || json.success===false){
-        pushBubble('bot', `❌ ${json?.upstream_status||''}\n${json?.upstream_body||json?.error||'未知錯誤'}`); return;
-      }
-      pushBubble('bot', json.reply || '(無內容)');
-      if(json.usage || json.cost_hkd!==undefined){
-        pushMeta(`模型：${json.model} · tokens=${json.usage?.total_tokens ?? '-'} · HKD$${json.cost_hkd ?? '-'}`);
-      }
-      history=[...messages,{role:"assistant",content:json.reply||''}];
-    }catch(err){
-      removeBubble(thinkId);
-      console.error(err); pushBubble('bot','❌ '+String(err));
-    }finally{
-      lock(false); input.value=""; pendingFiles=[]; fileBox.innerHTML="";
-    }
+  pushAI(res.reply || '(無內容)');
+  if (res.usage){
+    pushMeta(`${res.model} · tokens=${res.usage.total_tokens||0} · HKD$${(res.cost_hkd||0)}`);
   }
+}
 
-  // 氣泡工具
-  function pushBubble(who,text){
-    const id='b'+(++_id);
-    const item=document.createElement('div'); item.className=who; item.dataset.id=id;
-    const b=document.createElement('div'); b.className='bubble'; b.textContent=text; item.appendChild(b);
-    const m=document.createElement('div'); m.className='meta'; m.textContent=(who==='me'?(LANG==='zh-HK'?'你':'You'):'AI'); item.appendChild(m);
-    chat.appendChild(item); chat.scrollTop=chat.scrollHeight; return id;
-  }
-  function removeBubble(id){ const el=document.querySelector(`[data-id="${id}"]`); if(el) el.remove(); }
-  function pushMeta(text){ const m=document.createElement('div'); m.className='meta'; m.textContent=text; chat.appendChild(m); chat.scrollTop=chat.scrollHeight; }
-  function lock(on){ document.getElementById('send').disabled=on; document.getElementById('input').disabled=on; document.getElementById('file').disabled=on; }
-});
+function pushMe(t){ pushBubble('me', t); }
+function pushAI(t){ pushBubble('ai', t); }
+function pushMeta(t){
+  const el = document.createElement('div'); el.className='meta'; el.textContent=t; chat.appendChild(el);
+  chat.scrollTo({top: chat.scrollHeight, behavior:'smooth'});
+}
+
+function pushBubble(who, t){
+  const b = document.createElement('div');
+  b.className = 'bubble ' + (who==='me'?'me':'ai');
+  b.textContent = t;
+  chat.appendChild(b);
+  chat.scrollTo({top: chat.scrollHeight, behavior:'smooth'});
+}
+
+/* helpers */
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const r = new FileReader();
+    r.onload = ()=> resolve((r.result||'').split(',')[1]||'');
+    r.onerror = reject; r.readAsDataURL(file);
+  });
+}
+function guessMime(name=''){
+  const n = name.toLowerCase();
+  if (n.endsWith('.png')) return 'image/png';
+  if (n.endsWith('.jpg')||n.endsWith('.jpeg')) return 'image/jpeg';
+  if (n.endsWith('.webp')) return 'image/webp';
+  if (n.endsWith('.pdf')) return 'application/pdf';
+  if (n.endsWith('.doc')) return 'application/msword';
+  if (n.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  if (n.endsWith('.ppt')) return 'application/vnd.ms-powerpoint';
+  if (n.endsWith('.pptx')) return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  if (n.endsWith('.xls')) return 'application/vnd.ms-excel';
+  if (n.endsWith('.xlsx')) return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  if (n.endsWith('.txt')) return 'text/plain';
+  return 'application/octet-stream';
+}
+
+/* 初始狀態 */
+btnPro.textContent = PRO ? '開' : '關';
+btnLang.textContent = LANG==='zh'?'粵語':'EN';
 </script>
 </body>
 </html>
-
-
-
