@@ -179,6 +179,7 @@ let pendingFiles = [];
 
 /* ====== DOM ready ====== */
 window.addEventListener('DOMContentLoaded', () => {
+  let _id = 0; // ← 提早宣告，避免 TDZ
   const chat = document.getElementById('chat');
   const input = document.getElementById('input');
   const fileInput = document.getElementById('file');
@@ -333,7 +334,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // 氣泡工具
-  let _id=0;
   function pushBubble(who,text){
     const id='b'+(++_id);
     const item=document.createElement('div'); item.className=who; item.dataset.id=id;
@@ -348,3 +348,4 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
