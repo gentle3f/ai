@@ -94,8 +94,6 @@
   <div class="hint">提示：電腦 Enter 送出、Shift+Enter 換行；手機 Enter 會換行，請按「送出」。</div>
 </div>
 
-<script>
-/* ===== 基本狀態 ===== */
 const $=s=>document.querySelector(s);
 const chat=$('#chat'), input=$('#input'), emailEl=$('#email'), fileEl=$('#file');
 const btnSend=$('#btnSend'), btnClear=$('#btnClear'), btnPro=$('#btnPro'), btnLang=$('#btnLang');
@@ -103,19 +101,25 @@ const IS_MOBILE = matchMedia("(pointer:coarse)").matches || /Android|iPhone|iPad
 
 let LANG=(localStorage.getItem('lang')||'zh');
 let PRO=JSON.parse(localStorage.getItem('pro')||'false');
-let API=new URLSearchParams(location.search).get('api')||localStorage.getItem('api')||'';
-if(API) localStorage.setItem('api',API);
+
+/* ✅ 單一來源：API 變數，並確保一定有值 */
+let API = new URLSearchParams(location.search).get('api') || localStorage.getItem('api') || '';
+if (!API) {
+  const u = prompt('請貼上 Apps Script 的 /exec URL：');
+  if (u) { API = u.trim(); localStorage.setItem('api', API); }
+}
+if (API) localStorage.setItem('api', API);
+
 emailEl.value=localStorage.getItem('email')||'';
 
-const PRESETS={
-  zh:{
-    ask:"請用廣東話回答以下問題，先講重點，再以簡單要點解釋：",
-    letter:"幫我寫一封電郵：\n收件人：\n主題：\n口吻：禮貌專業\n內容要點：\n",
-    vision:"請幫我分析呢張相，列出你見到嘅重點，然後俾出建議：",
-    translate:"幫我把以下文字翻譯成粵語口語：\n",
-    imgprompt:"幫我寫一段清晰的圖片生成提示詞（stable diffusion / gpt-image / flux），主題："
-  }
-};
+/* ===== 任務預設 ===== */
+const PRESETS={ zh:{
+  ask:"請用廣東話回答以下問題，先講重點，再以簡單要點解釋：",
+  letter:"幫我寫一封電郵：\n收件人：\n主題：\n口吻：禮貌專業\n內容要點：\n",
+  vision:"請幫我分析呢張相，列出你見到嘅重點，然後俾出建議：",
+  translate:"幫我把以下文字翻譯成粵語口語：\n",
+  imgprompt:"幫我寫一段清晰的圖片生成提示詞（stable diffusion / gpt-image / flux），主題："
+}};
 
 /* ===== 綁定 ===== */
 document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>pickTask(c.dataset.task)));
@@ -127,17 +131,29 @@ btnLang.addEventListener('click',()=>{ LANG=(LANG==='zh'?'en':'zh'); localStorag
 input.addEventListener('focus',()=>setTimeout(()=>input.scrollIntoView({block:'nearest'}),180));
 input.addEventListener('keydown',(e)=>{ if(e.key!=='Enter')return; if(IS_MOBILE)return; if(e.shiftKey)return; e.preventDefault(); sendNow(); });
 btnSend.addEventListener('click',sendNow);
-fileEl.addEventListener('change',()=>{ /* 可顯示已選檔案提示 */ });
+fileEl.addEventListener('change',()=>{ /* show selection if needed */ });
 
 input.addEventListener('input',()=>{ input.style.height='auto'; const lh=parseFloat(getComputedStyle(input).lineHeight)||20; input.style.height=Math.min(input.scrollHeight, lh*6)+'px'; });
 
+/* email 改變 → 清除已驗證 */
 emailEl.addEventListener('input',()=>{ localStorage.removeItem('verifiedEmail'); setSendEnabled(false); });
 
 btnPro.textContent=PRO?'開':'關'; btnLang.textContent=LANG==='zh'?'粵語':'EN';
-if(localStorage.getItem('verifiedEmail') &&
-  localStorage.getItem('verifiedEmail').toLowerCase()=== (emailEl.value||'').trim().toLowerCase()){
-  setSendEnabled(true);
-}else setSendEnabled(false);
+
+/* ===== 啟動時自動驗證（如 email 已填 & API 已設） ===== */
+(async function boot(){
+  if (!API) { setSendEnabled(false); pushAI('⚠️ API 未設定，請重新載入並按提示貼上 /exec URL。'); return; }
+  const saved=localStorage.getItem('verifiedEmail');
+  if (saved && saved.toLowerCase()===(emailEl.value||'').trim().toLowerCase()) {
+    setSendEnabled(true);
+  } else if ((emailEl.value||'').trim()) {
+    const ok = await verifyEmailServer((emailEl.value||'').trim());
+    if (ok) { localStorage.setItem('verifiedEmail', (emailEl.value||'').trim()); setSendEnabled(true); }
+    else { setSendEnabled(false); }
+  } else {
+    setSendEnabled(false);
+  }
+})();
 
 /* ===== 功能 ===== */
 function pickTask(task){
@@ -151,28 +167,28 @@ function getEmailRequired(){
   if(!v){ emailEl.focus(); emailEl.reportValidity?.(); return null; }
   localStorage.setItem('email',v); return v;
 }
-
 function setSendEnabled(on){ btnSend.disabled=!on; }
 
+/* ✅ 統一用 API 變數；加強容錯 + console 記錄  */
 async function verifyEmailServer(email){
-  const api = localStorage.getItem('api');
-  if (!api) return false;
-  try {
-    const r = await fetch(api + '?verify=' + encodeURIComponent(email), { cache: 'no-store' });
-    const ct = (r.headers.get('content-type') || '').toLowerCase();
+  if (!API) return false;
+  try{
+    const r=await fetch(API+'?verify='+encodeURIComponent(email), { cache:'no-store' });
+    const ct=(r.headers.get('content-type')||'').toLowerCase();
     if (ct.includes('application/json')) {
-      const j = await r.json();
+      const j=await r.json();
+      console.log('[verify] json', j);
       return !!j.ok;
     } else {
-      // 後備：試下 parse 文字（避免 "Unexpected token <"）
-      const txt = (await r.text()).trim();
-      // 盡量容錯：{"ok":true} / true / ok:true / 其他
+      const txt=(await r.text()).trim();
+      console.log('[verify] text', txt);
       if (/\"ok\"\s*:\s*true/.test(txt)) return true;
       if (/^\s*\{\s*ok\s*:\s*true\s*\}\s*$/i.test(txt)) return true;
       if (/^true$/i.test(txt)) return true;
       return false;
     }
-  } catch(e){
+  }catch(e){
+    console.warn('[verify] error', e);
     return false;
   }
 }
@@ -209,7 +225,7 @@ async function sendNow(){
   const payload={email,model,messages,attachments};
 
   try{
-    const r=await fetch(localStorage.getItem('api'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const ct=r.headers.get('content-type')||'';
     const data=ct.includes('application/json')? await r.json() : {success:false,error:(await r.text()).slice(0,400)};
     if(!data.success){ pushAI('❌ 連線失敗：'+(data.error||data.upstream_body||'未知錯誤')); return; }
@@ -220,6 +236,7 @@ async function sendNow(){
   }
 }
 
+/* ===== UI helpers ===== */
 function pushMe(t){ pushBubble('me',t); }
 function pushAI(t){ pushBubble('ai',t); }
 function pushMeta(t){ const el=document.createElement('div'); el.className='meta'; el.textContent=t; chat.appendChild(el); chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'}); }
@@ -243,7 +260,7 @@ function guessMime(name=''){
   if(n.endsWith('.txt'))return'text/plain';
   return'application/octet-stream';
 }
-</script>
 </body>
 </html>
+
 
