@@ -236,7 +236,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const task = chip.dataset.task;
     modelSel.value = TASK_MODEL[task];               // 自揀模型
     pushBubble('bot', TXT[LANG].guide[task]);        // 顯示引導
-    if (!input.value.trim()) input.value = PRESETS[LANG][task]; // 填預設字眼
+    input.value = "";                                   // 立即清空
+    input.placeholder = PRESETS[LANG][task] || "";      // 用 preset 做 placeholder 提示
     input.focus();
   });
 
@@ -300,11 +301,17 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   async function sendNow(){
-    const email=getEmailRequired(); if(!email) return;
-    const text=input.value.trim();
-    if(!text && pendingFiles.length===0){ input.placeholder = TXT[LANG].inputPH; return; }
+  const email = getEmailRequired(); if (!email) return;
+  const text  = input.value.trim();
 
-    pushBubble('me', text || '(只有附件)');
+  //（如無內容且冇附件，直接返回）
+  if (!text && pendingFiles.length === 0){
+    input.placeholder = TXT[LANG].inputPH;
+    return;
+  }
+
+  input.value = "";   // ← 送出即刻清空
+  pushBubble('me', text || '(只有附件)');
 
     const task = (document.querySelector('.chip.active')?.dataset.task)||'ask';
     const messages=[...history,{role:"user",content:(PRESETS[LANG][task]||'')+"\n\n"+(text||'')}];
@@ -348,4 +355,5 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
