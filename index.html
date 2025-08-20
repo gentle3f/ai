@@ -7,9 +7,9 @@
 <style>
   :root{
     --bg:#f6f7fb; --card:#fff; --text:#1f2a37; --sub:#6b7280;
-    --primary:#2563eb; --primary-weak:#e5edff; --danger:#ef4444;
+    --primary:#2563eb; --primary-weak:#e5edff; --danger:#ef4444; --ok:#16a34a;
     --ring:rgba(37,99,235,.35); --shadow:0 6px 24px rgba(0,0,0,.07);
-    --radius:16px; --footer-h:clamp(82px, 22vh, 180px);
+    --radius:16px; --footer-h:clamp(88px, 22vh, 180px);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -25,13 +25,17 @@
   .chip.primary{background:var(--primary-weak);border-color:#caddff;color:#143a9c}
   .right{margin-left:auto;display:flex;gap:8px;align-items:center}
   .muted{color:var(--sub)}
-  .field{display:flex;gap:10px;align-items:center;margin-top:10px}
+  .field{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
   .field input{flex:1;min-width:220px;padding:12px 14px;border-radius:12px;border:1px solid #dce3ef;background:#fff;outline:none}
   .field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--ring)}
   .btn{padding:10px 14px;border-radius:12px;border:1px solid #dce3ef;background:#fff;cursor:pointer}
   .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
   .btn.danger{background:#fff;color:var(--danger);border-color:#ffd9da}
+  .btn.ok{background:#eaf7ef;color:#0f5d2f;border-color:#cfeedd}
   .btn[disabled]{opacity:.5;cursor:not-allowed}
+  .badge{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid #e5e7eb;background:#fff}
+  .badge.ok{color:#0f5d2f;background:#eaf7ef;border-color:#cfeedd}
+  .badge.err{color:#a70d17;background:#fff0f1;border-color:#ffd9da}
   main{max-width:1100px;margin:10px auto 0;padding:0 16px}
   .chat{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-height:48vh}
   .bubble{max-width:92%;padding:12px 14px;border-radius:14px;margin:8px 0;line-height:1.55;word-wrap:break-word;white-space:pre-wrap}
@@ -71,10 +75,13 @@
           <span class="muted" id="lblPro">專業模式：</span><button class="btn" id="btnPro">關</button>
         </div>
       </div>
+
       <div class="field">
         <label class="muted" id="lblEmail">電郵（必填）：</label>
         <input id="email" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email">
         <button class="btn" id="btnApi">設定 API</button>
+        <button class="btn" id="btnVerify">驗證</button>
+        <span class="badge" id="verBadge">未驗證</span>
       </div>
     </div>
   </header>
@@ -101,10 +108,11 @@
 </div>
 
 <script>
-/* ====== 基本狀態 ====== */
+/* ===== 基本狀態 ===== */
 const $=s=>document.querySelector(s);
 const chat=$('#chat'), input=$('#input'), emailEl=$('#email'), fileEl=$('#file'), filesBox=$('#files');
-const btnSend=$('#btnSend'), btnClear=$('#btnClear'), btnPro=$('#btnPro'), btnLang=$('#btnLang'), btnApi=$('#btnApi');
+const btnSend=$('#btnSend'), btnClear=$('#btnClear'), btnPro=$('#btnPro'), btnLang=$('#btnLang'), btnApi=$('#btnApi'), btnVerify=$('#btnVerify');
+const verBadge=$('#verBadge');
 const IS_MOBILE = matchMedia("(pointer:coarse)").matches || /Android|iPhone|iPad/i.test(navigator.userAgent);
 
 let LANG=(localStorage.getItem('lang')||'zh');
@@ -117,38 +125,37 @@ if(!API){
   if(u){ API=u.trim(); localStorage.setItem('api',API); }
 }
 if(API) localStorage.setItem('api',API);
+console.log('[API]', API);
 
 emailEl.value=localStorage.getItem('email')||'';
 
-/* ====== 文案 ====== */
-const I18N={
-  zh:{
-    chips:{ask:'發問',letter:'寫信',vision:'分析圖片',translate:'翻譯',imgprompt:'生成圖片提示詞'},
-    welcome:'👋 歡迎！上面揀任務，下面輸入或上載檔案，我會一步步引導你。',
-    email:'電郵（必填）：', pro:'專業模式：', upload:'📎 上載', hint:'提示：電腦 Enter 送出、Shift+Enter 換行；手機 Enter 會換行，請按「送出」。',
-    presets:{
-      ask:'請用廣東話回答以下問題，先講重點，再以簡單要點解釋：',
-      letter:'幫我寫一封電郵：\n收件人：\n主題：\n口吻：禮貌專業\n內容要點：\n',
-      vision:'請幫我分析呢張相，列出你見到嘅重點，然後俾出建議：',
-      translate:'幫我把以下文字翻譯成粵語口語：\n',
-      imgprompt:'幫我寫一段清晰的圖片生成提示詞（stable diffusion / gpt-image / flux），主題：'
-    }
-  },
-  en:{
-    chips:{ask:'Ask',letter:'Write letter',vision:'Analyze image',translate:'Translate',imgprompt:'Image prompt'},
-    welcome:'👋 Welcome! Pick a task above, then type or upload below. I’ll guide you step by step.',
-    email:'Email (required):', pro:'Pro mode:', upload:'📎 Upload', hint:'Tip: Enter to send (desktop), Shift+Enter for newline. On mobile press “Send”.',
-    presets:{
-      ask:'Answer the question. Start with key points, then explain in simple bullets:',
-      letter:'Write an email:\nTo:\nSubject:\nTone: Polite & professional\nKey points:\n',
-      vision:'Analyze this image. List key observations then give suggestions:',
-      translate:'Translate into natural Cantonese:',
-      imgprompt:'Write a clear image generation prompt (stable diffusion / gpt-image / flux). Topic:'
-    }
+/* ===== 文案 ===== */
+const I18N={ zh:{
+  chips:{ask:'發問',letter:'寫信',vision:'分析圖片',translate:'翻譯',imgprompt:'生成圖片提示詞'},
+  welcome:'👋 歡迎！上面揀任務，下面輸入或上載檔案，我會一步步引導你。',
+  email:'電郵（必填）：', pro:'專業模式：', upload:'📎 上載', hint:'提示：電腦 Enter 送出、Shift+Enter 換行；手機 Enter 會換行，請按「送出」。',
+  presets:{
+    ask:'請用廣東話回答以下問題，先講重點，再以簡單要點解釋：',
+    letter:'幫我寫一封電郵：\n收件人：\n主題：\n口吻：禮貌專業\n內容要點：\n',
+    vision:'請幫我分析呢張相，列出你見到嘅重點，然後俾出建議：',
+    translate:'幫我把以下文字翻譯成粵語口語：\n',
+    imgprompt:'幫我寫一段清晰的圖片生成提示詞（stable diffusion / gpt-image / flux），主題：'
   }
-};
+}, en:{
+  chips:{ask:'Ask',letter:'Write letter',vision:'Analyze image',translate:'Translate',imgprompt:'Image prompt'},
+  welcome:'👋 Welcome! Pick a task above, then type or upload below. I’ll guide you step by step.',
+  email:'Email (required):', pro:'Pro mode:', upload:'📎 Upload', hint:'Tip: Enter to send (desktop), Shift+Enter for newline. On mobile press “Send”.',
+  presets:{
+    ask:'Answer the question. Start with key points, then explain in simple bullets:',
+    letter:'Write an email:\nTo:\nSubject:\nTone: Polite & professional\nKey points:\n',
+    vision:'Analyze this image. List key observations then give suggestions:',
+    translate:'Translate into natural Cantonese:',
+    imgprompt:'Write a clear image generation prompt (stable diffusion / gpt-image / flux). Topic:'
+  }
+}};
+function t(k){ return k.split('.').reduce((o,kk)=>o&&o[kk], I18N[LANG]||I18N.zh); }
 
-/* ====== 綁定 ====== */
+/* ===== 綁定 ===== */
 document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>pickTask(c.dataset.task)));
 btnClear.addEventListener('click',()=>{ chat.innerHTML=`<div class="bubble ai">${t('welcome')}</div><div class="meta">AI</div>`; input.value=''; filesBox.innerHTML=''; fileEl.value=''; });
 btnPro.addEventListener('click',()=>{ PRO=!PRO; localStorage.setItem('pro',JSON.stringify(PRO)); btnPro.textContent=PRO?'開':'關';
@@ -160,6 +167,7 @@ btnApi.addEventListener('click', ()=>{
   const u=prompt('貼上 Apps Script 的 /exec URL：', cur);
   if(u && u.trim()){ localStorage.setItem('api',u.trim()); location.reload(); }
 });
+btnVerify.addEventListener('click', manualVerify);
 
 input.addEventListener('focus',()=>setTimeout(()=>input.scrollIntoView({block:'nearest'}),180));
 input.addEventListener('keydown',(e)=>{ if(e.key!=='Enter')return; if(IS_MOBILE)return; if(e.shiftKey)return; e.preventDefault(); sendNow(); });
@@ -168,93 +176,95 @@ btnSend.addEventListener('click',sendNow);
 fileEl.addEventListener('change',()=>{ filesBox.innerHTML=''; [...fileEl.files].forEach(f=>{ const s=document.createElement('span'); s.className='filepill'; s.textContent=f.name; filesBox.appendChild(s); }); });
 
 input.addEventListener('input',()=>{ input.style.height='auto'; const lh=parseFloat(getComputedStyle(input).lineHeight)||20; input.style.height=Math.min(input.scrollHeight, lh*6)+'px'; });
-emailEl.addEventListener('input',()=>{ localStorage.removeItem('verifiedEmail'); setSendEnabled(false); });
+emailEl.addEventListener('input',()=>{ localStorage.removeItem('verifiedEmail'); setVerified(false); setSendEnabled(false); });
 
-/* ====== 初始 UI ====== */
-applyLang();
-btnPro.textContent=PRO?'開':'關';
+/* ===== 初始 UI ===== */
+applyLang(); btnPro.textContent=PRO?'開':'關';
 
-/* ====== 開頁自動 verify ====== */
+/* ===== 開頁自動 verify ===== */
 (async function boot(){
-  if(!API){ setSendEnabled(false); pushAI('⚠️ API 未設定，請按「設定 API」。'); return; }
+  if(!API){ setSendEnabled(false); setVerified(false,'API 未設定'); pushAI('⚠️ API 未設定，請按「設定 API」。'); return; }
   const saved=localStorage.getItem('verifiedEmail');
   if(saved && emailEl.value && saved.toLowerCase()===emailEl.value.trim().toLowerCase()){
-    setSendEnabled(true);
+    setVerified(true,'本機已驗證'); setSendEnabled(true);
   }else if(emailEl.value){
     const ok=await verifyEmailServer(emailEl.value.trim());
-    if(ok){ localStorage.setItem('verifiedEmail', emailEl.value.trim()); setSendEnabled(true); }
-    else{ setSendEnabled(false); }
-  }else setSendEnabled(false);
+    setVerified(ok, ok?'已驗證':'未驗證'); setSendEnabled(ok);
+  }else{ setVerified(false); setSendEnabled(false); }
 })();
 
-/* ====== 語言應用 ====== */
-function t(k){
-  const p=I18N[LANG]||I18N.zh;
-  // 支援 "chips.ask" / "presets.vision" 等點號路徑
-  return k.split('.').reduce((o,kk)=>o && o[kk], p);
-}
+/* ===== 語言應用 ===== */
 function applyLang(){
-  // chips
   $('#chip-ask').textContent=t('chips.ask');
   $('#chip-letter').textContent=t('chips.letter');
   $('#chip-vision').textContent=t('chips.vision');
   $('#chip-translate').textContent=t('chips.translate');
   $('#chip-imgprompt').textContent=t('chips.imgprompt');
-  // labels
   $('#welcome').textContent=t('welcome');
   $('#lblEmail').textContent=t('email');
   $('#lblPro').textContent=t('pro');
   $('#lblUpload').textContent=t('upload');
   $('#hint').textContent=t('hint');
-  // language button
   btnLang.textContent = (LANG==='zh' ? '粵語' : 'EN');
-  // placeholder
   if(!input.value) input.placeholder = (LANG==='zh'?'輸入訊息…':'Type a message…');
 }
 
-/* ====== 任務 selector ====== */
+/* ===== 任務 ===== */
 function pickTask(task){
   input.value=""; input.placeholder=t('presets.'+task)|| (LANG==='zh'?'輸入訊息…':'Type a message…');
   pushAI('✅ '+(LANG==='zh'?'已選擇任務：':'Selected task: ')+($('#chip-'+task).textContent)+'。'+(LANG==='zh'?'請按提示輸入，或上載檔案。':'Follow the hint or upload files.'));
   input.focus();
 }
 
-/* ====== 驗證 + 送出 ====== */
+/* ===== 驗證控制 ===== */
+function setVerified(ok, txt){
+  verBadge.classList.toggle('ok', !!ok);
+  verBadge.classList.toggle('err', !ok);
+  verBadge.textContent = ok ? (txt||'已驗證') : (txt||'未驗證');
+}
 function setSendEnabled(on){ btnSend.disabled=!on; }
+
+async function manualVerify(){
+  const email = (emailEl.value||'').trim(); if(!email){ emailEl.focus(); return; }
+  setVerified(false,'驗證中…'); setSendEnabled(false);
+  const ok = await verifyEmailServer(email);
+  setVerified(ok, ok?'已驗證':'未驗證');
+  if(ok){ localStorage.setItem('verifiedEmail', email); setSendEnabled(true); }
+}
+
+async function verifyEmailServer(email){
+  if(!API) return false;
+  try{
+    const url = API + (API.includes('?') ? '&' : '?') + 'verify=' + encodeURIComponent(email);
+    const r=await fetch(url,{cache:'no-store'});
+    const ct=(r.headers.get('content-type')||'').toLowerCase();
+    if(ct.includes('application/json')){ const j=await r.json(); console.log('[verify json]', j); return !!j.ok; }
+    const txt=(await r.text()).trim(); console.log('[verify text]', txt);
+    if(/\"ok\"\s*:\s*true/.test(txt)) return true;
+    if(/^\s*\{\s*ok\s*:\s*true\s*\}\s*$/i.test(txt)) return true;
+    if(/^true$/i.test(txt)) return true;
+    return false;
+  }catch(e){ console.warn('[verify err]', e); return false; }
+}
+
 function getEmailRequired(){
   const v=(emailEl.value||'').trim();
   if(!v){ emailEl.focus(); emailEl.reportValidity?.(); return null; }
   localStorage.setItem('email',v); return v;
 }
-async function verifyEmailServer(email){
-  if(!API) return false;
-  try{
-    const r=await fetch(API+'?verify='+encodeURIComponent(email),{cache:'no-store'});
-    const ct=(r.headers.get('content-type')||'').toLowerCase();
-    if(ct.includes('application/json')){
-      const j=await r.json(); console.log('[verify json]', j); return !!j.ok;
-    }else{
-      const txt=(await r.text()).trim(); console.log('[verify text]', txt);
-      if(/\"ok\"\s*:\s*true/.test(txt)) return true;
-      if(/^\s*\{\s*ok\s*:\s*true\s*\}\s*$/i.test(txt)) return true;
-      if(/^true$/i.test(txt)) return true;
-      return false;
-    }
-  }catch(e){ console.warn('[verify err]', e); return false; }
-}
-async function ensureEmailVerified(){
-  const email=(emailEl.value||'').trim(); if(!email){ emailEl.focus(); return false; }
-  const cached=localStorage.getItem('verifiedEmail');
-  if(cached && cached.toLowerCase()===email.toLowerCase()){ setSendEnabled(true); return true; }
-  setSendEnabled(false);
-  const ok=await verifyEmailServer(email);
-  if(ok){ localStorage.setItem('verifiedEmail',email); setSendEnabled(true); return true; }
-  pushAI('⚠️ 你嘅電郵未被授權使用，請聯絡負責人加入白名單。'); emailEl.focus(); return false;
-}
 
+/* ===== 送出 ===== */
 async function sendNow(){
   const email=getEmailRequired(); if(!email) return;
-  if(!(await ensureEmailVerified())) return;
+
+  // 自動驗證（就算未先按「驗證」）
+  let verified = localStorage.getItem('verifiedEmail');
+  if(!(verified && verified.toLowerCase()===email.toLowerCase())){
+    setVerified(false,'驗證中…'); setSendEnabled(false);
+    const ok = await verifyEmailServer(email);
+    setVerified(ok, ok?'已驗證':'未驗證'); if(!ok){ pushAI('⚠️ 你嘅電郵未被授權使用，請聯絡負責人加入白名單。'); return; }
+    localStorage.setItem('verifiedEmail', email); setSendEnabled(true);
+  }
 
   const text=(input.value||'').trim();
   const files=[...(fileEl.files||[])];
@@ -282,15 +292,13 @@ async function sendNow(){
   }catch(err){ pushAI('❌ 連線失敗：'+String(err)); }
 }
 
-/* ====== UI helpers ====== */
+/* ===== UI helpers ===== */
 function pushMe(t){ pushBubble('me',t); }
 function pushAI(t){ pushBubble('ai',t); }
 function pushMeta(t){ const el=document.createElement('div'); el.className='meta'; el.textContent=t; chat.appendChild(el); chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'}); }
 function pushBubble(who,t){ const b=document.createElement('div'); b.className='bubble '+(who==='me'?'me':'ai'); b.textContent=t; chat.appendChild(b); chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'}); }
 
-function fileToBase64(file){
-  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res((r.result||'').split(',')[1]||''); r.onerror=rej; r.readAsDataURL(file); });
-}
+function fileToBase64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res((r.result||'').split(',')[1]||''); r.onerror=rej; r.readAsDataURL(file); }); }
 function guessMime(name=''){
   const n=name.toLowerCase();
   if(n.endsWith('.png'))return'image/png';
