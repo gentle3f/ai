@@ -6,90 +6,54 @@
 <title>貼地 AI – Pay-per-Ask</title>
 <style>
   :root{
-    --bg:#f6f7fb;
-    --card:#ffffff;
-    --text:#1f2a37;
-    --sub:#6b7280;
-    --primary:#2563eb;
-    --primary-weak:#e5edff;
-    --danger:#ef4444;
-    --ring: rgba(37,99,235,.35);
-    --shadow: 0 6px 24px rgba(0,0,0,.07);
-    --radius:16px;
-    --footer-h: clamp(72px, 18vh, 160px);
+    --bg:#f6f7fb; --card:#fff; --text:#1f2a37; --sub:#6b7280;
+    --primary:#2563eb; --primary-weak:#e5edff; --danger:#ef4444;
+    --ring: rgba(37,99,235,.35); --shadow:0 6px 24px rgba(0,0,0,.07);
+    --radius:16px; --footer-h: clamp(78px, 20vh, 170px);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{
-    margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "PingFang HK", "PingFang TC", "Noto Sans TC", "Heiti TC", Arial, sans-serif;
-  }
-  .wrap{min-height:100%; padding-bottom: calc(var(--footer-h) + env(safe-area-inset-bottom));}
-  header{
-    position:sticky; top:0; z-index:10; background:linear-gradient(#ffffff, #ffffffcc);
-    backdrop-filter:saturate(1.2) blur(6px);
-    border-bottom:1px solid #eef2f7;
-  }
-  .bar{max-width:1100px;margin:auto;padding:16px 16px 10px}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"PingFang HK","PingFang TC","Noto Sans TC","Heiti TC",Arial,sans-serif}
+  .wrap{min-height:100%;padding-bottom:calc(var(--footer-h) + env(safe-area-inset-bottom))}
+  header{position:sticky;top:0;z-index:10;background:linear-gradient(#fff,#ffffffcc);
+    backdrop-filter:saturate(1.2) blur(6px);border-bottom:1px solid #eef2f7}
+  .bar{max-width:1100px;margin:auto;padding:14px 16px 10px}
   .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .chip{
-    padding:10px 14px;border-radius:999px;background:#fff;border:1px solid #e5e7eb;cursor:pointer;user-select:none;
-  }
+  .chip{padding:10px 14px;border-radius:999px;background:#fff;border:1px solid #e5e7eb;cursor:pointer;user-select:none}
   .chip:hover{border-color:#d1d5db}
   .chip.primary{background:var(--primary-weak);border-color:#caddff;color:#143a9c}
   .right{margin-left:auto;display:flex;gap:8px;align-items:center}
   .muted{color:var(--sub)}
   .field{display:flex;gap:10px;align-items:center;margin-top:10px}
-  .field input{
-    flex:1;min-width:220px;padding:12px 14px;border-radius:12px;border:1px solid #dce3ef;background:#fff;
-  }
-  .btn{
-    padding:10px 14px;border-radius:12px;border:1px solid #dce3ef;background:#fff;cursor:pointer;
-  }
+  .field input{flex:1;min-width:220px;padding:12px 14px;border-radius:12px;border:1px solid #dce3ef;background:#fff;outline:none}
+  .field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--ring)}
+  .btn{padding:10px 14px;border-radius:12px;border:1px solid #dce3ef;background:#fff;cursor:pointer}
   .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
   .btn.danger{background:#fff;color:var(--danger);border-color:#ffd9da}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
   main{max-width:1100px;margin:10px auto 0;padding:0 16px}
-  .chat{
-    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-    padding:16px;min-height:48vh;
-  }
-  .bubble{
-    max-width:92%;padding:12px 14px;border-radius:14px;margin:8px 0;line-height:1.55;
-    word-wrap:break-word;white-space:pre-wrap;
-  }
+  .chat{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;min-height:48vh}
+  .bubble{max-width:92%;padding:12px 14px;border-radius:14px;margin:8px 0;line-height:1.55;word-wrap:break-word;white-space:pre-wrap}
   .me{background:#e8f0ff;border:1px solid #cfe0ff;margin-left:auto}
   .ai{background:#f5f7fb;border:1px solid #e6eaf2}
   .meta{font-size:12px;color:var(--sub);margin:4px 2px 0}
-  /* sticky composer */
-  .composer{
-    position:fixed;left:0;right:0;bottom:0;z-index:15;background:#fff;border-top:1px solid #e8edf4;
-    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-  }
-  .composer-inner{max-width:1100px;margin:auto;display:grid;grid-template-columns: auto 1fr auto;gap:10px;align-items:end}
-  .upload-label{
-    display:inline-flex;gap:8px;align-items:center;padding:10px 12px;border:1px dashed #cfd7e6;border-radius:12px;background:#fafbff;cursor:pointer;
-  }
+  .composer{position:fixed;left:0;right:0;bottom:0;z-index:15;background:#fff;border-top:1px solid #e8edf4;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+  .composer-inner{max-width:1100px;margin:auto;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:end}
+  .upload-label{display:inline-flex;gap:8px;align-items:center;padding:10px 12px;border:1px dashed #cfd7e6;border-radius:12px;background:#fafbff;cursor:pointer}
   .upload-label input{display:none}
-  textarea{
-    width:100%;resize:none;max-height:10lh;min-height:3lh;padding:12px 14px;border-radius:12px;border:1px solid #dce3ef;background:#fff;
-    outline:none;
-  }
-  textarea:focus{border-color:var(--primary); box-shadow:0 0 0 3px var(--ring)}
-  .send{
-    min-width:84px;padding:12px 14px;border-radius:12px;background:var(--primary);color:#fff;border:none;cursor:pointer;
-  }
+  textarea{width:100%;resize:none;max-height:10lh;min-height:3lh;padding:12px 14px;border-radius:12px;border:1px solid #dce3ef;background:#fff;outline:none}
+  textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--ring)}
+  .send{min-width:84px;padding:12px 14px;border-radius:12px;background:var(--primary);color:#fff;border:none;cursor:pointer}
   .hint{max-width:1100px;margin:6px auto 10px;padding:0 16px;color:var(--sub);font-size:12px}
-  /* space at bottom so chat不被composer遮住 */
   .spacer{height:calc(var(--footer-h) + env(safe-area-inset-bottom))}
-  @media (max-width:720px){
-    .bubble{max-width:100%}
-    .composer-inner{grid-template-columns:auto 1fr auto}
-  }
+  @media (max-width:720px){.bubble{max-width:100%}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- 頂部：任務 chip + 控件 -->
   <header>
     <div class="bar">
       <div class="row">
@@ -102,11 +66,9 @@
         <div class="right">
           <button class="btn" id="btnLang">粵語</button>
           <button class="btn danger" id="btnClear">清除對話</button>
-          <span class="muted">專業模式：</span>
-          <button class="btn" id="btnPro">關</button>
+          <span class="muted">專業模式：</span><button class="btn" id="btnPro">關</button>
         </div>
       </div>
-
       <div class="field">
         <label class="muted">電郵（必填）：</label>
         <input id="email" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email">
@@ -114,7 +76,6 @@
     </div>
   </header>
 
-  <!-- 對話區 -->
   <main>
     <div id="chat" class="chat">
       <div class="bubble ai">👋 歡迎！上面揀任務，下面輸入或上載檔案，我會一步步引導你。</div>
@@ -123,18 +84,10 @@
     <div class="spacer" aria-hidden="true"></div>
   </main>
 
-  <!-- 置底輸入區（composer） -->
   <div class="composer" role="region" aria-label="輸入區">
     <div class="composer-inner">
-      <label class="upload-label">
-        📎 上載
-        <input id="file" type="file" multiple accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt">
-      </label>
-      <textarea id="input"
-        placeholder="輸入訊息…（支援貼圖／上載檔案）"
-        rows="3"
-        enterkeyhint="done"  <!-- 手機鍵盤顯示「完成」，避免誤導為送出 -->
-      ></textarea>
+      <label class="upload-label">📎 上載<input id="file" type="file" multiple accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"></label>
+      <textarea id="input" placeholder="輸入訊息…（支援貼圖／上載檔案）" rows="3" enterkeyhint="done"></textarea>
       <button class="send" id="btnSend">送出</button>
     </div>
   </div>
@@ -142,257 +95,141 @@
 </div>
 
 <script>
-/* ====== 全域狀態 ====== */
-const $ = s => document.querySelector(s);
-const chat = $('#chat');
-const input = $('#input');
-const emailEl = $('#email');
-const fileEl = $('#file');
-const btnSend = $('#btnSend');
-const btnClear = $('#btnClear');
-const btnPro = $('#btnPro');
-const btnLang = $('#btnLang');
+/* ===== 基本狀態 ===== */
+const $=s=>document.querySelector(s);
+const chat=$('#chat'), input=$('#input'), emailEl=$('#email'), fileEl=$('#file');
+const btnSend=$('#btnSend'), btnClear=$('#btnClear'), btnPro=$('#btnPro'), btnLang=$('#btnLang');
 const IS_MOBILE = matchMedia("(pointer:coarse)").matches || /Android|iPhone|iPad/i.test(navigator.userAgent);
 
-let LANG = (localStorage.getItem('lang') || 'zh');
-let PRO = JSON.parse(localStorage.getItem('pro') || 'false');
-let API = new URLSearchParams(location.search).get('api') || localStorage.getItem('api') || '';
-if (API) localStorage.setItem('api', API);
+let LANG=(localStorage.getItem('lang')||'zh');
+let PRO=JSON.parse(localStorage.getItem('pro')||'false');
+let API=new URLSearchParams(location.search).get('api')||localStorage.getItem('api')||'';
+if(API) localStorage.setItem('api',API);
+emailEl.value=localStorage.getItem('email')||'';
 
-emailEl.value = localStorage.getItem('email') || '';
-async function verifyEmailServer(email){
-  const api = localStorage.getItem('api');
-  if (!api) return false;
-  try {
-    const r = await fetch(api + '?verify=' + encodeURIComponent(email));
-    const j = await r.json();
-    return !!j.ok;
-  } catch(e){
-    return false;
-  }
-}
-
-function setSendEnabled(on){
-  $('#btnSend').disabled = !on;
-}
-
-async function ensureEmailVerified(){
-  const email = (emailEl.value || '').trim();
-  if (!email) { emailEl.focus(); return false; }
-
-  // 若已驗證且未改變，直接通過
-  const cached = localStorage.getItem('verifiedEmail');
-  if (cached && cached.toLowerCase() === email.toLowerCase()){
-    setSendEnabled(true);
-    return true;
-  }
-
-  // 向後端查
-  setSendEnabled(false);
-  const ok = await verifyEmailServer(email);
-  if (ok){
-    localStorage.setItem('verifiedEmail', email);
-    setSendEnabled(true);
-    return true;
-  } else {
-    pushAI('⚠️ 你嘅電郵未被授權使用，請聯絡負責人加入白名單。');
-    emailEl.focus();
-    return false;
-  }
-}
-
-// 當 email 改變，清除已驗證狀態並暫時禁用送出
-emailEl.addEventListener('input', ()=>{
-  localStorage.removeItem('verifiedEmail');
-  setSendEnabled(false);
-});
-
-// 預設：如果已記住同已驗證，就啟用；否則禁用
-if (localStorage.getItem('verifiedEmail') &&
-    localStorage.getItem('verifiedEmail').toLowerCase() === (emailEl.value||'').trim().toLowerCase()) {
-  setSendEnabled(true);
-} else {
-  setSendEnabled(false);
-}
-/* ====== 任務預設 ====== */
-const PRESETS = {
+const PRESETS={
   zh:{
-    ask: "請用廣東話回答以下問題，先講重點，再以簡單要點解釋：",
-    letter: "幫我寫一封電郵：\n收件人：\n主題：\n口吻：禮貌專業\n內容要點：\n",
-    vision: "請幫我分析呢張相，列出你見到嘅重點，然後俾出建議：",
-    translate: "幫我把以下文字翻譯成粵語口語：\n",
-    imgprompt: "幫我寫一段清晰的圖片生成提示詞（stable diffusion / gpt-image / flux），主題："
+    ask:"請用廣東話回答以下問題，先講重點，再以簡單要點解釋：",
+    letter:"幫我寫一封電郵：\n收件人：\n主題：\n口吻：禮貌專業\n內容要點：\n",
+    vision:"請幫我分析呢張相，列出你見到嘅重點，然後俾出建議：",
+    translate:"幫我把以下文字翻譯成粵語口語：\n",
+    imgprompt:"幫我寫一段清晰的圖片生成提示詞（stable diffusion / gpt-image / flux），主題："
   }
 };
 
-/* ====== UI 綁定 ====== */
-document.querySelectorAll('.chip').forEach(ch=>{
-  ch.addEventListener('click', ()=>{
-    pickTask(ch.dataset.task);
-  });
-});
+/* ===== 綁定 ===== */
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>pickTask(c.dataset.task)));
+btnClear.addEventListener('click',()=>{ chat.innerHTML='<div class="bubble ai">🧹 已開新對話。</div><div class="meta">AI</div>'; input.value=''; });
+btnPro.addEventListener('click',()=>{ PRO=!PRO; localStorage.setItem('pro',JSON.stringify(PRO)); btnPro.textContent=PRO?'開':'關';
+  pushAI(PRO?'🔧 專業模式已開：輸入 /model 以指定模型（如 openai/gpt-5-chat）。':'已關閉專業模式。系統會自動幫你揀模型。');});
+btnLang.addEventListener('click',()=>{ LANG=(LANG==='zh'?'en':'zh'); localStorage.setItem('lang',LANG); btnLang.textContent=LANG==='zh'?'粵語':'EN'; });
 
-btnClear.addEventListener('click', ()=>{
-  chat.innerHTML = '<div class="bubble ai">🧹 已開新對話。</div><div class="meta">AI</div>';
-  input.value = '';
-});
+input.addEventListener('focus',()=>setTimeout(()=>input.scrollIntoView({block:'nearest'}),180));
+input.addEventListener('keydown',(e)=>{ if(e.key!=='Enter')return; if(IS_MOBILE)return; if(e.shiftKey)return; e.preventDefault(); sendNow(); });
+btnSend.addEventListener('click',sendNow);
+fileEl.addEventListener('change',()=>{ /* 可顯示已選檔案提示 */ });
 
-btnPro.addEventListener('click', ()=>{
-  PRO = !PRO; localStorage.setItem('pro', JSON.stringify(PRO));
-  btnPro.textContent = PRO ? '開' : '關';
-  pushAI(PRO ? '🔧 專業模式已開：輸入 /model 以指定模型（如 openai/gpt-5-chat）。' :
-               '已關閉專業模式。系統會自動幫你揀模型。');
-});
+input.addEventListener('input',()=>{ input.style.height='auto'; const lh=parseFloat(getComputedStyle(input).lineHeight)||20; input.style.height=Math.min(input.scrollHeight, lh*6)+'px'; });
 
-btnLang.addEventListener('click', ()=>{
-  LANG = (LANG==='zh'?'en':'zh');
-  localStorage.setItem('lang', LANG);
-  btnLang.textContent = LANG==='zh'?'粵語':'EN';
-});
+emailEl.addEventListener('input',()=>{ localStorage.removeItem('verifiedEmail'); setSendEnabled(false); });
 
-/* 手機：focus 時確保 composer 不被鍵盤遮住 */
-input.addEventListener('focus', ()=>{
-  setTimeout(()=> input.scrollIntoView({block:'nearest'}), 180);
-});
+btnPro.textContent=PRO?'開':'關'; btnLang.textContent=LANG==='zh'?'粵語':'EN';
+if(localStorage.getItem('verifiedEmail') &&
+  localStorage.getItem('verifiedEmail').toLowerCase()=== (emailEl.value||'').trim().toLowerCase()){
+  setSendEnabled(true);
+}else setSendEnabled(false);
 
-/* 送出邏輯：電腦 Enter 送出、Shift+Enter 換行；手機 Enter 只換行 */
-input.addEventListener('keydown', (e)=>{
-  if (e.key !== 'Enter') return;
-  if (IS_MOBILE) return;            // 手機一律只換行
-  if (e.shiftKey) return;           // 電腦 Shift+Enter 換行
-  e.preventDefault();
-  sendNow();
-});
-
-btnSend.addEventListener('click', sendNow);
-fileEl.addEventListener('change', attachFiles);
-
-/* 自動增高 textarea（最多 6 行） */
-input.addEventListener('input', ()=>{
-  input.style.height = 'auto';
-  const lineH = parseFloat(getComputedStyle(input).lineHeight) || 20;
-  const max = lineH * 6;
-  input.style.height = Math.min(input.scrollHeight, max) + 'px';
-});
-
-/* ====== 功能 ====== */
+/* ===== 功能 ===== */
 function pickTask(task){
-  input.value = "";                                // 清空輸入框
-  input.placeholder = PRESETS.zh[task] || "輸入訊息…";
-  pushAI('✅ 已選擇任務：' + taskName(task) + '。請按提示輸入，或上載檔案。');
+  input.value=""; input.placeholder=PRESETS.zh[task]||"輸入訊息…";
+  pushAI('✅ 已選擇任務：'+({ask:'發問',letter:'寫信',vision:'分析圖片',translate:'翻譯',imgprompt:'生成圖片提示詞'}[task]||task)+'。請按提示輸入，或上載檔案。');
   input.focus();
 }
 
-function taskName(t){
-  return {ask:'發問', letter:'寫信', vision:'分析圖片', translate:'翻譯', imgprompt:'生成圖片提示詞'}[t] || t;
-}
-
 function getEmailRequired(){
-  const v = (emailEl.value||'').trim();
-  if (!v){ emailEl.focus(); emailEl.reportValidity?.(); return null; }
-  localStorage.setItem('email', v);
-  return v;
+  const v=(emailEl.value||'').trim();
+  if(!v){ emailEl.focus(); emailEl.reportValidity?.(); return null; }
+  localStorage.setItem('email',v); return v;
 }
 
-function attachFiles(){
-  // 可加 chip 顯示已選檔案；目前交由 sendNow() 讀取 fileEl.files
+function setSendEnabled(on){ btnSend.disabled=!on; }
+
+async function verifyEmailServer(email){
+  const api=localStorage.getItem('api'); if(!api) return false;
+  try{
+    const r=await fetch(api+'?verify='+encodeURIComponent(email));
+    const ct=r.headers.get('content-type')||'';
+    const j=ct.includes('application/json')? await r.json(): {ok:false};
+    return !!j.ok;
+  }catch(e){ return false; }
+}
+
+async function ensureEmailVerified(){
+  const email=(emailEl.value||'').trim(); if(!email){ emailEl.focus(); return false; }
+  const cached=localStorage.getItem('verifiedEmail');
+  if(cached && cached.toLowerCase()===email.toLowerCase()){ setSendEnabled(true); return true; }
+  setSendEnabled(false);
+  const ok=await verifyEmailServer(email);
+  if(ok){ localStorage.setItem('verifiedEmail',email); setSendEnabled(true); return true; }
+  pushAI('⚠️ 你嘅電郵未被授權使用，請聯絡負責人加入白名單。'); emailEl.focus(); return false;
 }
 
 async function sendNow(){
-  const email = getEmailRequired(); if (!email) return;
- // ★ 新增：強制先驗證白名單
-  if (!(await ensureEmailVerified())) return;
+  const email=getEmailRequired(); if(!email) return;
+  if(!(await ensureEmailVerified())) return;
 
-  // ... 你原有 sendNow() 其餘內容
-  // 收集文字
-  const text = (input.value || '').trim();
-  const files = [...(fileEl.files||[])];
+  const text=(input.value||'').trim();
+  const files=[...(fileEl.files||[])];
+  if(!text && files.length===0){ input.placeholder="請輸入文字或上載檔案…"; input.focus(); return; }
 
-  if (!text && files.length===0){
-    input.placeholder = "請輸入文字或上載檔案…";
-    input.focus(); return;
-  }
+  input.value=''; pushMe(text||'(只有附件)');
 
-  // UI 立即清空／回饋
-  input.value = '';
-  pushMe(text || '(只有附件)');
+  const attachments=[];
+  for(const f of files){ const b64=await fileToBase64(f); attachments.push({filename:f.name,mimeType:f.type||guessMime(f.name),dataBase64:b64}); }
+  fileEl.value='';
 
-  // 準備附件（轉 base64）
-  const attachments = [];
-  for (const f of files){
-    const b64 = await fileToBase64(f);
-    attachments.push({ filename:f.name, mimeType:f.type || guessMime(f.name), dataBase64:b64 });
-  }
-  fileEl.value = ''; // reset
+  let model='openai/gpt-5-chat';
+  if(attachments.some(a=>a.mimeType.startsWith('image/'))) model='openai/gpt-5-vision-preview';
+  if(PRO && text.startsWith('/model ')) model=text.split(/\s+/)[1]||model;
 
-  // 自動揀模型（簡化示例）
-  let model = 'openai/gpt-5-chat';
-  if (attachments.some(a=>a.mimeType.startsWith('image/'))) model = 'openai/gpt-5-vision-preview';
-  if (PRO && text.startsWith('/model ')) model = text.split(/\s+/)[1] || model;
+  const messages=[{role:'user',content:text}];
+  const payload={email,model,messages,attachments};
 
-  const messages = [{ role:'user', content:text }];
-
-  // 呼叫後端
-  const payload = { email, model, messages, attachments };
-  const res = await fetch(localStorage.getItem('api'), {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
-  }).then(r=>r.json()).catch(err=>({success:false, error:String(err)}));
-
-  if (!res.success){
-    pushAI('❌ 連線失敗：' + (res.error || res.upstream_body || ''));
-    return;
-  }
-
-  pushAI(res.reply || '(無內容)');
-  if (res.usage){
-    pushMeta(`${res.model} · tokens=${res.usage.total_tokens||0} · HKD$${(res.cost_hkd||0)}`);
+  try{
+    const r=await fetch(localStorage.getItem('api'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const ct=r.headers.get('content-type')||'';
+    const data=ct.includes('application/json')? await r.json() : {success:false,error:(await r.text()).slice(0,400)};
+    if(!data.success){ pushAI('❌ 連線失敗：'+(data.error||data.upstream_body||'未知錯誤')); return; }
+    pushAI(data.reply||'(無內容)');
+    if(data.usage){ pushMeta(`${data.model} · tokens=${data.usage.total_tokens||0} · HKD$${(data.cost_hkd||0)}`); }
+  }catch(err){
+    pushAI('❌ 連線失敗：'+String(err));
   }
 }
 
-function pushMe(t){ pushBubble('me', t); }
-function pushAI(t){ pushBubble('ai', t); }
-function pushMeta(t){
-  const el = document.createElement('div'); el.className='meta'; el.textContent=t; chat.appendChild(el);
-  chat.scrollTo({top: chat.scrollHeight, behavior:'smooth'});
-}
+function pushMe(t){ pushBubble('me',t); }
+function pushAI(t){ pushBubble('ai',t); }
+function pushMeta(t){ const el=document.createElement('div'); el.className='meta'; el.textContent=t; chat.appendChild(el); chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'}); }
+function pushBubble(who,t){ const b=document.createElement('div'); b.className='bubble '+(who==='me'?'me':'ai'); b.textContent=t; chat.appendChild(b); chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'}); }
 
-function pushBubble(who, t){
-  const b = document.createElement('div');
-  b.className = 'bubble ' + (who==='me'?'me':'ai');
-  b.textContent = t;
-  chat.appendChild(b);
-  chat.scrollTo({top: chat.scrollHeight, behavior:'smooth'});
-}
-
-/* helpers */
 function fileToBase64(file){
-  return new Promise((resolve,reject)=>{
-    const r = new FileReader();
-    r.onload = ()=> resolve((r.result||'').split(',')[1]||'');
-    r.onerror = reject; r.readAsDataURL(file);
-  });
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res((r.result||'').split(',')[1]||''); r.onerror=rej; r.readAsDataURL(file); });
 }
 function guessMime(name=''){
-  const n = name.toLowerCase();
-  if (n.endsWith('.png')) return 'image/png';
-  if (n.endsWith('.jpg')||n.endsWith('.jpeg')) return 'image/jpeg';
-  if (n.endsWith('.webp')) return 'image/webp';
-  if (n.endsWith('.pdf')) return 'application/pdf';
-  if (n.endsWith('.doc')) return 'application/msword';
-  if (n.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-  if (n.endsWith('.ppt')) return 'application/vnd.ms-powerpoint';
-  if (n.endsWith('.pptx')) return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-  if (n.endsWith('.xls')) return 'application/vnd.ms-excel';
-  if (n.endsWith('.xlsx')) return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-  if (n.endsWith('.txt')) return 'text/plain';
-  return 'application/octet-stream';
+  const n=name.toLowerCase();
+  if(n.endsWith('.png'))return'image/png';
+  if(n.endsWith('.jpg')||n.endsWith('.jpeg'))return'image/jpeg';
+  if(n.endsWith('.webp'))return'image/webp';
+  if(n.endsWith('.pdf'))return'application/pdf';
+  if(n.endsWith('.doc'))return'application/msword';
+  if(n.endsWith('.docx'))return'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  if(n.endsWith('.ppt'))return'application/vnd.ms-powerpoint';
+  if(n.endsWith('.pptx'))return'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+  if(n.endsWith('.xls'))return'application/vnd.ms-excel';
+  if(n.endsWith('.xlsx'))return'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  if(n.endsWith('.txt'))return'text/plain';
+  return'application/octet-stream';
 }
-
-/* 初始狀態 */
-btnPro.textContent = PRO ? '開' : '關';
-btnLang.textContent = LANG==='zh'?'粵語':'EN';
 </script>
 </body>
 </html>
-
