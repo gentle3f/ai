@@ -160,7 +160,60 @@ let API = new URLSearchParams(location.search).get('api') || localStorage.getIte
 if (API) localStorage.setItem('api', API);
 
 emailEl.value = localStorage.getItem('email') || '';
+async function verifyEmailServer(email){
+  const api = localStorage.getItem('api');
+  if (!api) return false;
+  try {
+    const r = await fetch(api + '?verify=' + encodeURIComponent(email));
+    const j = await r.json();
+    return !!j.ok;
+  } catch(e){
+    return false;
+  }
+}
 
+function setSendEnabled(on){
+  $('#btnSend').disabled = !on;
+}
+
+async function ensureEmailVerified(){
+  const email = (emailEl.value || '').trim();
+  if (!email) { emailEl.focus(); return false; }
+
+  // 若已驗證且未改變，直接通過
+  const cached = localStorage.getItem('verifiedEmail');
+  if (cached && cached.toLowerCase() === email.toLowerCase()){
+    setSendEnabled(true);
+    return true;
+  }
+
+  // 向後端查
+  setSendEnabled(false);
+  const ok = await verifyEmailServer(email);
+  if (ok){
+    localStorage.setItem('verifiedEmail', email);
+    setSendEnabled(true);
+    return true;
+  } else {
+    pushAI('⚠️ 你嘅電郵未被授權使用，請聯絡負責人加入白名單。');
+    emailEl.focus();
+    return false;
+  }
+}
+
+// 當 email 改變，清除已驗證狀態並暫時禁用送出
+emailEl.addEventListener('input', ()=>{
+  localStorage.removeItem('verifiedEmail');
+  setSendEnabled(false);
+});
+
+// 預設：如果已記住同已驗證，就啟用；否則禁用
+if (localStorage.getItem('verifiedEmail') &&
+    localStorage.getItem('verifiedEmail').toLowerCase() === (emailEl.value||'').trim().toLowerCase()) {
+  setSendEnabled(true);
+} else {
+  setSendEnabled(false);
+}
 /* ====== 任務預設 ====== */
 const PRESETS = {
   zh:{
@@ -247,7 +300,10 @@ function attachFiles(){
 
 async function sendNow(){
   const email = getEmailRequired(); if (!email) return;
+ // ★ 新增：強制先驗證白名單
+  if (!(await ensureEmailVerified())) return;
 
+  // ... 你原有 sendNow() 其餘內容
   // 收集文字
   const text = (input.value || '').trim();
   const files = [...(fileEl.files||[])];
@@ -339,3 +395,4 @@ btnLang.textContent = LANG==='zh'?'粵語':'EN';
 </script>
 </body>
 </html>
+
